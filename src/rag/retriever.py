@@ -28,7 +28,6 @@ class RAGHandler:
     def _get_relevant_context(self, query: str, n_results: int = 3) -> List[str]:
         """Get the relevant context from the vector store"""
         results = self.embeddings_manager.query_similar(query, n_results=n_results)
-        print(f"Retrieved context for query '{query}': {results}")  # Debug print
         return results['documents'][0]
     
     def generate_response(self, query: str) -> Dict:
@@ -71,7 +70,9 @@ if __name__ == "__main__":
     
     # Test questions
     test_questions = [
-        "Whenn is the assignment deadline?",
+        "What is the deadline for progress check 1 of the ssh assignment?",
+        "What is the max word count for the ssh essay?",
+        "What are the assignment criteria for the ssh assignment?"
     ]
     
     print("Testing RAG system with sample questions:\n")

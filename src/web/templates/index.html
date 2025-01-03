@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chat-container {
+            height: calc(100vh - 200px);
+        }
+        
+        /* Add styling for formatted text */
+        .chat-container div {
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Talk to Jonathan!</h1>
+        
+        <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-lg">
+            <!-- Chat messages container -->
+            <div id="chat-container" class="chat-container overflow-y-auto p-4 space-y-4">
+                <div class="bg-blue-100 p-4 rounded-lg">
+                    <p>👋 Hello! I'm Jonathan, your course assistant. Ask me anything about your courses, assignments, or deadlines!</p>
+                </div>
+            </div>
+            
+            <!-- Input form -->
+            <div class="p-4 border-t">
+                <form id="query-form" class="flex space-x-2">
+                    <input 
+                        type="text" 
+                        id="question-input"
+                        class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Ask a question..."
+                    >
+                    <button 
+                        type="submit"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const queryForm = document.getElementById('query-form');
+        const questionInput = document.getElementById('question-input');
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-4 rounded-lg ${isUser ? 'bg-blue-500 text-white ml-12' : 'bg-gray-100 mr-12 whitespace-pre-line'}`;
+            // Use innerHTML instead of textContent to render HTML
+            if (isUser) {
+                messageDiv.textContent = content;
+            } else {
+                messageDiv.innerHTML = content;
+            }
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        queryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            // Add user message
+            addMessage(question, true);
+            questionInput.value = '';
+
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question }),
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addMessage(data.response);
+                } else {
+                    addMessage('Sorry, I encountered an error. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('Sorry, I encountered an error. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

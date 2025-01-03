@@ -1,31 +1,45 @@
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-        
+
+
 from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
 from typing import List, Dict
 from src.data.preprocessor import DocumentChunk
 
+class SentenceTransformerEmbedding:
+    def __init__(self, model_name: str):
+        self.model = SentenceTransformer(model_name)
+    
+    def __call__(self, input: List[str]) -> List[List[float]]:
+        embeddings = self.model.encode(input)
+        return embeddings.tolist()
 
 class EmbeddingsManager:
     def __init__(self, model_name: str ="all-MiniLM-L6-v2"):
-        persist_directory = os.path.abspath("data/chroma_db")
-        print(f"Using persistence directory: {persist_directory}")
+        root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        persist_directory = os.path.join(root_dir, "data", "chroma_db")
+        
         if not os.path.exists(persist_directory):
             os.makedirs(persist_directory)
         
-        self.model = SentenceTransformer(model_name)
-        self.chroma_client = chromadb.Client(Settings(
-            persist_directory=persist_directory,
-            anonymized_telemetry=False
-        ))
-        collection = self.chroma_client.get_or_create_collection("course_materials")
-        print(f"Collection size: {collection.count()}")
+        embedding_function = SentenceTransformerEmbedding(model_name)
+        self.chroma_client = chromadb.PersistentClient(
+            path=persist_directory
+        )
+        
+        collection = self.chroma_client.get_or_create_collection(
+            name="course_materials",
+            embedding_function=embedding_function
+        )
         self.collection = collection
-         
+    
     def embed_chunks(self, chunks: List[DocumentChunk]):
+        if not chunks:
+            return
+            
         texts = [chunk.text for chunk in chunks]
         ids = [chunk.chunk_id for chunk in chunks]
         metadatas = [chunk.metadata for chunk in chunks]
@@ -35,10 +49,13 @@ class EmbeddingsManager:
             ids=ids,
             metadatas=metadatas
         )
-        
+        print(f"Collection size after adding chunks: {self.collection.count()}")
     def query_similar(self, query: str, n_results: int = 3) -> List[Dict]:
+        print(f"Querying collection with: {query}")
+        print(f"Current collection size: {self.collection.count()}")
+        
         results = self.collection.query(
-            query_texts = [query],
+            query_texts=[query],
             n_results=n_results
         )
         return results
