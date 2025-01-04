@@ -70,9 +70,7 @@ if __name__ == "__main__":
     
     # Test questions
     test_questions = [
-        "What is the deadline for progress check 1 of the ssh assignment?",
-        "What is the max word count for the ssh essay?",
-        "What are the assignment criteria for the ssh assignment?"
+
     ]
     
     print("Testing RAG system with sample questions:\n")

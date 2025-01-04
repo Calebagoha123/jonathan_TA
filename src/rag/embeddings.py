@@ -8,10 +8,6 @@ import chromadb
 from chromadb.config import Settings
 from typing import List, Dict
 from src.data.preprocessor import DocumentChunk
-import tempfile
-from chromadb.utils import embedding_functions
-
-
 
 class SentenceTransformerEmbedding:
     def __init__(self, model_name: str):
@@ -24,7 +20,7 @@ class SentenceTransformerEmbedding:
 class EmbeddingsManager:
     def __init__(self, model_name: str ="all-MiniLM-L6-v2"):
         root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        persist_directory = os.path.join(tempfile.gettempdir(), "chroma_db")
+        persist_directory = os.path.join(root_dir, "data", "chroma_db")
         
         if not os.path.exists(persist_directory):
             os.makedirs(persist_directory)

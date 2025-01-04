@@ -42,5 +42,5 @@ Q: "When is the semester 4 CME assignment deadline?"
 Q: "What are the weekly goals for the semester 4 group project?"
 Q: Q: "How many credits can i get from an internship?"
 Q: "What masters programs can I apply to?"
-Q: "What percentage of my grade is the semester 4 de assignment?"
+Q: "What percentage of my semester 4 cme grade is the ethics position statement?"
 

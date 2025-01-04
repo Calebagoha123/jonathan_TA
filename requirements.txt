@@ -103,6 +103,7 @@ Pygments==2.18.0
 PyPDF2==3.0.1
 PyPika==0.48.9
 pyproject_hooks==1.2.0
+pysqlite3==0.5.4
 python-dateutil==2.9.0.post0
 python-docx==0.8.11
 python-dotenv==1.0.0
@@ -152,9 +153,11 @@ unstructured==0.10.30
 urllib3==2.3.0
 uvicorn==0.24.0
 uvloop==0.21.0
+watchdog==6.0.0
 watchfiles==1.0.3
 websocket-client==1.8.0
 websockets==14.1
+wheel==0.45.1
 wrapt==1.17.0
 yarl==1.18.3
 zipp==3.21.0
