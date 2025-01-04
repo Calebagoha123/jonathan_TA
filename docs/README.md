@@ -1,6 +1,14 @@
-# Jonathan - CSSci RAG Assistant (link to app)
+# Jonathan - CSSci RAG Assistant ([Try It!](https://jonathanai.streamlit.app/))
 
 An open-source RAG-powered chatbot that helps students find information from course materials. Built using modern RAG (Retrieval Augmented Generation) techniques, this assistant can answer questions about assignments, course content, and other academic materials found on Canvas.
+
+### Example Prompts
+- "When is the semester 4 CME assignment deadline?"
+- "What are the weekly goals for the semester 4 group project?"
+- "How many credits can i get from an internship?"
+- "What masters programs can I apply to?"
+- "What percentage of my semester 4 cme grade is the ethics position statement?"
+
 
 ## Features
 
@@ -33,14 +41,4 @@ An open-source RAG-powered chatbot that helps students find information from cou
 - **Streamlit App**: User-friendly chat interface
 - **Session Management**: Maintains conversation context
 - **Response Generation**: Formats and displays answers
-
-### Example Queries
-
-#### Assignment Information
-```bash
-Q: "When is the semester 4 CME assignment deadline?"
-Q: "What are the weekly goals for the semester 4 group project?"
-Q: Q: "How many credits can i get from an internship?"
-Q: "What masters programs can I apply to?"
-Q: "What percentage of my semester 4 cme grade is the ethics position statement?"
 
