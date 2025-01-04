@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-
+import re
 from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
@@ -35,6 +35,53 @@ class EmbeddingsManager:
             embedding_function=embedding_function
         )
         self.collection = collection
+        
+    def filter_chunks(self, query: str) -> List[str]:
+        """Filter chunks based on metadata inferred from the query."""
+        query_lower = query.lower()
+        
+        # Debug: Print all unique metadata values
+        all_metadata = self.collection.get()['metadatas']
+        unique_assignments = set(m.get('assignment') for m in all_metadata if m.get('assignment'))
+        print("Available assignments in metadata:", unique_assignments)
+        
+        # Skip filtering for non-assignment queries
+        if any(keyword in query_lower for keyword in ["internship", "masters", "master's"]):
+            return None
+            
+        # Build filter based on semester and assignment
+        filter_value = None
+        semester = None
+        assignment = None
+
+        if "semester" in query_lower:
+            semester_match = re.search(r"semester (\d+)", query_lower)
+            if semester_match:
+                semester = semester_match.group(1)
+        
+        # Determine assignment type
+        if "group" in query_lower:
+            assignment_type = "Group_Project_Group_project"
+        elif any(kw in query_lower for kw in ["cme", "re", "ssh", "de"]):
+            assignment_type = "Individual_Assignments"
+            if "cme" in query_lower:
+                assignment_type += "_CME"
+            elif "re" in query_lower:
+                assignment_type += "_RE"
+            elif "ssh" in query_lower:
+                assignment_type += "_SSH"
+            elif "de" in query_lower:
+                assignment_type += "_DE"
+
+        # Build filter value
+        if semester and assignment_type:
+            filter_value = f"Semester_{semester}_{assignment_type}"
+        elif semester:
+            filter_value = f"Semester_{semester}"
+        elif assignment_type:
+            filter_value = f".*_{assignment_type}"
+
+        return {"assignment": filter_value} if filter_value else None
     
     def embed_chunks(self, chunks: List[DocumentChunk]):
         if not chunks:
@@ -49,14 +96,15 @@ class EmbeddingsManager:
             ids=ids,
             metadatas=metadatas
         )
-        print(f"Collection size after adding chunks: {self.collection.count()}")
-    def query_similar(self, query: str, n_results: int = 3) -> List[Dict]:
-        print(f"Querying collection with: {query}")
-        print(f"Current collection size: {self.collection.count()}")
         
+    def query_similar(self, query: str, n_results: int = 3) -> List[Dict]:
+        """Query the collection after filtering based on metadata."""
+        where_filters = self.filter_chunks(query)
+    
         results = self.collection.query(
             query_texts=[query],
-            n_results=n_results
+            n_results=n_results,
+            where=where_filters if where_filters else None
         )
         return results
     
@@ -77,6 +125,22 @@ if __name__ == "__main__":
     embeddings_manager = EmbeddingsManager()
     embeddings_manager.embed_chunks(chunks)
     
-    # Test query
-    results = embeddings_manager.query_similar("When is the assignment deadline?")
-    print(results['documents'][0])
+   # Test different query types
+    test_queries = [
+        #"When is the semester 4 cme assignment deadline?",
+        #"Tell me about internship opportunities",
+        #"What are the masters programs i can do?",
+        "What are the semester 4 group assignment's weekly goals?"
+    ]
+    
+    for query in test_queries:
+        print(f"\nTesting query: {query}")
+        filters = embeddings_manager.filter_chunks(query)
+        print(f"Generated filters: {filters}")
+        
+        results = embeddings_manager.query_similar(query)
+        print(f"Number of results: {len(results['documents'])}")
+        if results['documents']:
+            print(f"First result: {results['documents'][0]}")
+        else:
+            print("No results found")

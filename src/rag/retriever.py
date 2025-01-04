@@ -47,7 +47,7 @@ class RAGHandler:
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7, # might have to fine tune this based on testing
-            max_tokens = 500
+            max_tokens = 500 # this as well (short answers atm)
         )
         
         return {
