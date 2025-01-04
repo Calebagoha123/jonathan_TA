@@ -23,9 +23,9 @@ An open-source RAG-powered chatbot that helps students find information from cou
 - **Metadata Filtering**: Smart filtering system for relevant content
 - **Query Processing**: Handles semantic similarity search
 
-#### 3. Embeddings Pipeline
+#### 3. Embeddings & Retrieval Pipeline
 - **Model**: all-MiniLM-L6-v2 (Sentence Transformers)
-- **Dimension**: 384-dimensional embeddings
+- **LLM**: gpt-4o-mini
 - **Batch Processing**: Efficient document embedding
 - **Cache**: Persistent storage of embeddings
 
