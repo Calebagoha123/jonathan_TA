@@ -10,12 +10,13 @@ backoff==2.2.1
 bcrypt==4.2.1
 beautifulsoup4==4.12.3
 blinker==1.9.0
+build==1.2.2.post1
 cachetools==5.5.0
 certifi==2024.12.14
 chardet==5.2.0
 charset-normalizer==3.4.1
-chroma-hnswlib==0.7.3
-chromadb==0.4.18
+chroma-hnswlib==0.7.6
+chromadb==0.6.1
 click==8.1.8
 coloredlogs==15.0.1
 dataclasses-json==0.6.7
@@ -83,6 +84,7 @@ opentelemetry-proto==1.29.0
 opentelemetry-sdk==1.29.0
 opentelemetry-semantic-conventions==0.50b0
 opentelemetry-util-http==0.50b0
+orjson==3.10.13
 overrides==7.7.0
 packaging==23.2
 pandas==2.2.3
@@ -100,6 +102,7 @@ pydeck==0.9.1
 Pygments==2.18.0
 PyPDF2==3.0.1
 PyPika==0.48.9
+pyproject_hooks==1.2.0
 python-dateutil==2.9.0.post0
 python-docx==0.8.11
 python-dotenv==1.0.0
