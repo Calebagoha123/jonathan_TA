@@ -1,10 +1,10 @@
 # Project specific
 data/raw/*
 data/processed/*
-src/web/static/docs/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !src/web/static/docs/.gitkeep
+
 # Python
 __pycache__/
 *.py[cod]
