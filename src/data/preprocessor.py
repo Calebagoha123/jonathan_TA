@@ -32,11 +32,22 @@ class DocumentPreprocessor:
     
     @staticmethod
     def extract_metadata_from_path(file_path: str) -> Dict:
+        processed_path = Path(file_path)
+                
+        # Read the JSON to get original path structure
+        with open(processed_path, 'r') as f:
+            doc_data = json.load(f)
+        
+        static_path = doc_data["metadata"]["file_path"]
+        
+        # Extract components from original path
         path_parts = Path(file_path).parts
+            
         metadata = {
             "semester": path_parts[-3],  # Example: Semester_4
             "assignment_type": path_parts[-2],  # Example: Individual_Assignments
             "assignment": os.path.splitext(path_parts[-1])[0],  # Example: CME
+            "file_path": str(static_path)
         }
         return metadata
 
@@ -92,7 +103,6 @@ class DocumentPreprocessor:
             try:
                 doc_chunks = self.process_document(doc_path)
                 all_chunks.extend(doc_chunks)
-                print(f"Processed {doc_path.name} into {len(doc_chunks)} chunks.")
             except Exception as e:
                 print(f"Error processing {doc_path}: {str(e)}")
 

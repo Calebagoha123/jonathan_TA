@@ -15,20 +15,32 @@ class RAGHandler:
         self.embeddings_manager = EmbeddingsManager()
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
-    def _create_prompt(self, query: str, context: List[str]) -> str:
+    def _create_prompt(self, query: str, contexts: List[Dict]) -> str:
         """Create a prompt to ask the the llm using the context retrieved"""
+        context_texts = [ctx["text"] for ctx in contexts]
         prompt = f"""As Jonathan, the CSSci course assistant, use the following course material to answer the student's question. If the answer cannot be found in the context, say so clearly.
         Relevant course material:
-        {' '.join(context)}
+        {' '.join(context_texts)}
         Student question: {query}
         Assistant response:"""
         
         return prompt
     
-    def _get_relevant_context(self, query: str, n_results: int = 3) -> List[str]:
+    def _get_relevant_context(self, query: str, n_results: int = 3) -> List[Dict]:
         """Get the relevant context from the vector store"""
         results = self.embeddings_manager.query_similar(query, n_results=n_results)
-        return results['documents'][0]
+        documents = []
+        print("\nDebug - Raw results from ChromaDB:")
+        print(f"Metadatas: {results['metadatas']}")
+        
+        for doc, metadata in zip(results['documents'][0], results['metadatas'][0]):
+            documents.append({
+                "text": doc,
+                "metadata": metadata,
+                "file_path": metadata.get('file_path') if metadata else None
+            }) 
+            print(f"Created document with file_path: {metadata.get('file_path')}")
+        return documents
     
     def generate_response(self, query: str) -> Dict:
         """Generate the llm's response using retrieval augmented generation (RAG)"""
@@ -70,7 +82,9 @@ if __name__ == "__main__":
     
     # Test questions
     test_questions = [
-
+"How many credits can I get from an internship?", 
+"What are the weekly goals for the semester 4 group project?",
+"When is the semester 4 CME assignment deadline?"
     ]
     
     print("Testing RAG system with sample questions:\n")

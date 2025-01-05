@@ -40,11 +40,6 @@ class EmbeddingsManager:
         """Filter chunks based on metadata inferred from the query."""
         query_lower = query.lower()
         
-        # Debug: Print all unique metadata values
-        all_metadata = self.collection.get()['metadatas']
-        unique_assignments = set(m.get('assignment') for m in all_metadata if m.get('assignment'))
-        print("Available assignments in metadata:", unique_assignments)
-        
         # Skip filtering for non-assignment queries
         if any(keyword in query_lower for keyword in ["internship", "masters", "master's"]):
             return None
@@ -52,7 +47,6 @@ class EmbeddingsManager:
         # Build filter based on semester and assignment
         filter_value = None
         semester = None
-        assignment = None
 
         if "semester" in query_lower:
             semester_match = re.search(r"semester (\d+)", query_lower)
@@ -60,7 +54,9 @@ class EmbeddingsManager:
                 semester = semester_match.group(1)
         
         # Determine assignment type
-        if "group" in query_lower:
+        if "group" and "individual" in query_lower:
+            assignment_type = "Group_Project_individual_contribution"
+        elif "group" in query_lower:
             assignment_type = "Group_Project_Group_project"
         elif any(kw in query_lower for kw in ["cme", "re", "ssh", "de"]):
             assignment_type = "Individual_Assignments"
@@ -72,6 +68,8 @@ class EmbeddingsManager:
                 assignment_type += "_SSH"
             elif "de" in query_lower:
                 assignment_type += "_DE"
+        else:
+            return None
 
         # Build filter value
         if semester and assignment_type:
@@ -90,7 +88,8 @@ class EmbeddingsManager:
         texts = [chunk.text for chunk in chunks]
         ids = [chunk.chunk_id for chunk in chunks]
         metadatas = [chunk.metadata for chunk in chunks]
-        
+        print(metadatas)
+                
         self.collection.add(
             documents=texts,
             ids=ids,
@@ -130,7 +129,7 @@ if __name__ == "__main__":
         #"When is the semester 4 cme assignment deadline?",
         #"Tell me about internship opportunities",
         #"What are the masters programs i can do?",
-        "What are the semester 4 group assignment's weekly goals?"
+        #"What are the semester 4 group assignment's weekly goals?"
     ]
     
     for query in test_queries:
