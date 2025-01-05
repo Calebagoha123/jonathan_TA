@@ -23,8 +23,6 @@ def initialize_session_state():
         st.session_state.messages = [
             {"role": "assistant", "content": "👋 Hello! I'm Jonathan, your CSSci course assistant. Ask me anything about your courses, assignments, or deadlines!"}
         ]
-    if "pdf_visibility" not in st.session_state:
-        st.session_state.pdf_visibility = {}
 
 def get_pdf_data(file_path: str) -> str:
     """Convert PDF to base64 string"""
@@ -38,51 +36,23 @@ def get_pdf_data(file_path: str) -> str:
         return None
 
 def get_pdf_link(file_path: str) -> str:
-    """Generate an embedded PDF viewer link"""
+    """Generate a download link for PDF"""
     if file_path and file_path.endswith('.pdf'):
         pdf_data = get_pdf_data(file_path)
         if pdf_data:
-            return f'''
-                <iframe 
-                    src="{pdf_data}" 
-                    width="100%" 
-                    height="800px"
-                    style="border: none;"
-                    type="application/pdf"
-                    title="PDF Viewer">
-                    <object
-                        data="{pdf_data}"
-                        type="application/pdf"
-                        width="100%"
-                        height="800px">
-                        <p>Your browser does not support PDFs. Please download to view.</p>
-                    </object>
-                </iframe>
-            '''
+            filename = os.path.basename(file_path)
+            return f'<a href="{pdf_data}" download="{filename}" style="text-decoration:none;color:#2E8BC0;padding:0.5em 1em;border:1px solid #2E8BC0;border-radius:5px;background-color:white;">📥 Download PDF</a>'
     return None
 
 def display_source_documents(message, idx):
     if "source_docs" in message:
         st.divider()
         st.markdown("**Relevant Document:**")
-        for doc_idx, doc in enumerate(message["source_docs"]):
+        for doc in message["source_docs"]:
             if doc and doc.get("file_path"):
-                message_id = f"pdf_{idx}_{doc_idx}"
-                
-                # Get current visibility state
-                is_visible = st.session_state.pdf_visibility.get(message_id, False)
-                
-                # Create toggle button with icon
-                if st.button("👁️ View PDF" if not is_visible else "👁️ Hide PDF", 
-                           key=message_id):
-                    st.session_state.pdf_visibility[message_id] = not is_visible
-                    st.rerun()
-                
-                # Show PDF if visible
-                if st.session_state.pdf_visibility.get(message_id, False):
-                    pdf_link = get_pdf_link(doc["file_path"])
-                    if pdf_link:
-                        st.markdown(pdf_link, unsafe_allow_html=True)
+                pdf_link = get_pdf_link(doc["file_path"])
+                if pdf_link:
+                    st.markdown(pdf_link, unsafe_allow_html=True)
 
     
 def main():
@@ -126,25 +96,9 @@ def main():
                         if most_relevant_doc.get("file_path"):
                             st.divider()
                             st.markdown("**Relevant Document:**")
-                            
-                            # Create unique message ID for the new response
-                            message_id = f"pdf_{len(st.session_state.messages)}_0"
-                            
-                            # Initialize visibility state for new message
-                            if message_id not in st.session_state.pdf_visibility:
-                                st.session_state.pdf_visibility[message_id] = False
-                            
-                            # Add toggle button
-                            if st.button("👁️ View PDF" if not st.session_state.pdf_visibility[message_id] else "👁️ Hide PDF", 
-                                    key=message_id):
-                                st.session_state.pdf_visibility[message_id] = not st.session_state.pdf_visibility[message_id]
-                                st.rerun()
-                            
-                            # Show PDF if visible
-                            if st.session_state.pdf_visibility[message_id]:
-                                pdf_link = get_pdf_link(most_relevant_doc["file_path"])
-                                if pdf_link:
-                                    st.markdown(pdf_link, unsafe_allow_html=True)
+                            pdf_link = get_pdf_link(most_relevant_doc["file_path"])
+                            if pdf_link:
+                                st.markdown(pdf_link, unsafe_allow_html=True)
                                                                     
                     # Save message with sources
                     st.session_state.messages.append({
