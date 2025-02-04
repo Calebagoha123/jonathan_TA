@@ -9,6 +9,8 @@ from chromadb.config import Settings
 from typing import List, Dict
 from src.data.preprocessor import DocumentChunk
 
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 class SentenceTransformerEmbedding:
     def __init__(self, model_name: str):
         self.model = SentenceTransformer(model_name)
@@ -47,6 +49,9 @@ class EmbeddingsManager:
         # Build filter based on semester and assignment
         filter_value = None
         semester = None
+        
+        if "semester 6" in query_lower or "capstone" in query_lower:
+            return {"semester": "Semester_6"}
 
         if "semester" in query_lower:
             semester_match = re.search(r"semester (\d+)", query_lower)

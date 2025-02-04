@@ -1,6 +1,6 @@
 import os
 import sys
-
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from typing import List, Dict
@@ -16,9 +16,12 @@ class RAGHandler:
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
     def _create_prompt(self, query: str, contexts: List[Dict]) -> str:
+        semester = "semester 6" if any("Semester_6" in ctx["metadata"]["semester"] 
+                                 for ctx in contexts) else ""
         """Create a prompt to ask the the llm using the context retrieved"""
         context_texts = [ctx["text"] for ctx in contexts]
-        prompt = f"""As Jonathan, the CSSci course assistant, use the following course material to answer the student's question. If the answer cannot be found in the context, say so clearly.
+        prompt = f"""As Jonathan, the CSSci course assistant, use the following {semester} course material to answer the student's question. For capstone semester questions, consider the interconnected 
+    nature of all deliverables. If the answer cannot be found in the context, say so clearly.
         Relevant course material:
         {' '.join(context_texts)}
         Student question: {query}
@@ -82,7 +85,7 @@ if __name__ == "__main__":
     
     # Test questions
     test_questions = [
-"How many credits can I get from an internship?", 
+"What are the details of the capstone final product?", 
 "What are the weekly goals for the semester 4 group project?",
 "When is the semester 4 CME assignment deadline?"
     ]
