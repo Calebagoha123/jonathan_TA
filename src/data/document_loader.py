@@ -40,34 +40,46 @@ class DocumentLoader:
         get the metadata from the filepath and filename
         return the data as a dictionary
         """
-        # this function assumes that the file is stored like this: raw/COURSE_CODE/DOCUMENT_TYPE/filename
-        # so that we can easily keep track of which document belongs to which course, etc.
+        print(f"\n[DEBUG] Extracting metadata for file: {file_path}")
         parts = file_path.relative_to(self.raw_dir).parts
+        print(f"[DEBUG] File parts: {parts}")
 
-        return {
+        metadata = {
             "course_code": parts[0] if len(parts) > 1 else "unknown",
             "document_type": parts[1] if len(parts) > 2 else "unknown",
             "filename": file_path.name,
             "processed_date": datetime.now().isoformat(),
-            "file_path": str(static_path),  # Store the Streamlit-accessible path
+            "file_path": str(static_path),
             "original_path": str(file_path)
         }
+        print(f"[DEBUG] Generated metadata: {metadata}")
+        return metadata
         
     def load_documents(self) -> List[Dict]:
         """Load and process all documents in the raw directory"""
+        print("\n[DEBUG] Starting document loading process")
+        print(f"[DEBUG] Raw directory: {self.raw_dir}")
+    
         processed_docs = []
         
         for file_path in self.raw_dir.rglob("*"):
+            print(f"\n[DEBUG] Processing file: {file_path}")
             if not file_path.is_file():
+                print(f"[DEBUG] Skipping non-file: {file_path}")
                 continue
             
             try:
                 static_path = self.copy_to_static(file_path)
+                print(f"[DEBUG] Copied to static path: {static_path}")
 
                 if file_path.suffix.lower() == ".pdf":
+                    print(f"[DEBUG] Processing PDF file: {file_path}")
                     text = self.process_pdf(file_path)
+                    print(f"[DEBUG] Extracted text length: {len(text) if text else 0} characters")
+
                  ### NOTE: future implementation for other file types maybe (txt, docx, ppt)
                 else:
+                    print(f"[DEBUG] Skipping non-PDF file: {file_path}")
                     continue
                 
                 metadata = self.extract_metadata(file_path, static_path)
@@ -76,6 +88,7 @@ class DocumentLoader:
                 # Save processed document as a json for easy extraction later
                 doc_id = f"{metadata['course_code']}_{metadata['document_type']}_{file_path.stem}"
                 processed_path = self.processed_dir / f"{doc_id}.json"
+                print(f"[DEBUG] Saving processed document to: {processed_path}")
                 
                 doc_data = {
                     "id": doc_id,
