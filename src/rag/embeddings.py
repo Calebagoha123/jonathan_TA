@@ -78,23 +78,23 @@ class EmbeddingsManager:
             filters['assignment_type'] = "Group_Project"
             filters['assignment'] = "individual_contribution"
         elif "group" in query_lower:
-            filters['assignment_type'] = "Group_project"
+            filters['assignment_type'] = "Group_Project"
             filters['assignment'] = "Group_project"
         elif any(kw in query_lower for kw in ["cme", "re", "ssh", "de"]):
             filters['assignment_type'] = "Individual_Assignments"
             if "cme" in query_lower:
-                filters['assignment'] = "_CME"
+                filters['assignment'] = "CME"
             elif "re" in query_lower:
-                filters['assignment'] = "_RE"
+                filters['assignment'] = "RE"
             elif "ssh" in query_lower:
-                filters['assignment'] = "_SSH"
+                filters['assignment'] = "SSH"
             elif "de" in query_lower:
-                filters['assignment'] = "_DE"
+                filters['assignment'] = "DE"
         else:
             return None
             
         print(f"[DEBUG] Final filter value: {filters}")
-        return filters if filters else None
+        return {"filter_key": "_".join(filters.values())} if filters else None
     
     def embed_chunks(self, chunks: List[DocumentChunk]):
         print(f"\n[DEBUG] Embedding {len(chunks) if chunks else 0} chunks")
@@ -159,7 +159,7 @@ if __name__ == "__main__":
         "What are the details of the capstone final product?", 
         "Tell me about internship opportunities",
         "What are the masters programs i can do?",
-        #"What are the semester 4 group assignment's weekly goals?"
+        "What are the semester 4 group assignment's weekly goals?"
     ]
     
     print("\n[DEBUG] Testing queries")

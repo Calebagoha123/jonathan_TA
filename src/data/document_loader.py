@@ -48,6 +48,7 @@ class DocumentLoader:
             "course_code": parts[0] if len(parts) > 1 else "unknown",
             "document_type": parts[1] if len(parts) > 2 else "unknown",
             "filename": file_path.name,
+            "filter_key": "_".join(parts),
             "processed_date": datetime.now().isoformat(),
             "file_path": str(static_path),
             "original_path": str(file_path)

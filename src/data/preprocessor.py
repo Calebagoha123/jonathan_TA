@@ -48,7 +48,8 @@ class DocumentPreprocessor:
             "semester": f"{parts[0]}_{parts[1]}",  # Example: Semester_4
             "assignment_type": '_'.join(parts[2:4]),  # Example: Individual_Assignments
             "assignment": '_'.join(parts[4:]),  # Example: CME
-            "file_path": str(static_path)
+            "file_path": str(static_path),
+            "filter_key": "_".join(parts)
         }
         return metadata
 
