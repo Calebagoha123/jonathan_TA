@@ -70,31 +70,33 @@ class EmbeddingsManager:
                 semester_num = semester_match.group(1)
                 filters['semester'] = f"Semester_{semester_num}"
                 print(f"[DEBUG] Detected semester: {filters['semester']}")
+                return filters
 
         
-        # Determine assignment type
-        print("[DEBUG] Determining assignment type")
-        if "group" and "individual" in query_lower:
-            filters['assignment_type'] = "Group_Project"
-            filters['assignment'] = "individual_contribution"
-        elif "group" in query_lower:
-            filters['assignment_type'] = "Group_Project"
-            filters['assignment'] = "Group_project"
-        elif any(kw in query_lower for kw in ["cme", "re", "ssh", "de"]):
-            filters['assignment_type'] = "Individual_Assignments"
-            if "cme" in query_lower:
-                filters['assignment'] = "CME"
-            elif "re" in query_lower:
-                filters['assignment'] = "RE"
-            elif "ssh" in query_lower:
-                filters['assignment'] = "SSH"
-            elif "de" in query_lower:
-                filters['assignment'] = "DE"
-        else:
-            return None
+        # # Determine assignment type
+        # print("[DEBUG] Determining assignment type")
+        # if "group" and "individual" in query_lower:
+        #     filters['assignment_type'] = "Group_Project"
+        #     filters['assignment'] = "individual_contribution"
+        # elif "group" in query_lower:
+        #     filters['assignment_type'] = "Group_Project"
+        #     filters['assignment'] = "Group_project"
+        # elif any(kw in query_lower for kw in ["cme", "re", "ssh", "de"]):
+        #     filters['assignment_type'] = "Individual_Assignments"
+        #     if "cme" in query_lower:
+        #         filters['assignment'] = "CME"
+        #     elif "re" in query_lower:
+        #         filters['assignment'] = "RE"
+        #     elif "ssh" in query_lower:
+        #         filters['assignment'] = "SSH"
+        #     elif "de" in query_lower:
+        #         filters['assignment'] = "DE"
+        # else:
+        #     return None
             
-        print(f"[DEBUG] Final filter value: {filters}")
-        return {"filter_key": "_".join(filters.values())} if filters else None
+        # print(f"[DEBUG] Final filter value: {filters}")
+        # return {"filter_key": "_".join(filters.values())} if filters else None
+        return None
     
     def embed_chunks(self, chunks: List[DocumentChunk]):
         print(f"\n[DEBUG] Embedding {len(chunks) if chunks else 0} chunks")

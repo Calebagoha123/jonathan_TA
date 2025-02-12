@@ -85,7 +85,7 @@ class RAGHandler:
     def chat(self, query: str) -> str:
         """Simple chat interface"""
         try:
-            result = self.generate_response(query)
+            result = self.generate_response(query, [])
             return ''.join(result)
         except Exception as e:
             return f"Error generating response: {str(e)}"
