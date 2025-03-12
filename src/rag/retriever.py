@@ -4,17 +4,22 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from typing import List, Dict
-from openai import OpenAI
+import litellm
+from litellm import completion
 from src.rag.embeddings import EmbeddingsManager
 from dotenv import load_dotenv
 
 load_dotenv()
 
+# Configure LiteLLM
+litellm.api_base = os.getenv("LITELLM_ENDPOINT")
+os.environ["LITELLM_API_KEY"] = os.getenv("LITELLM_API_KEY")
+
+
 class RAGHandler:
     def __init__(self):
         self.embeddings_manager = EmbeddingsManager()
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    
+            
     def _create_prompt(self, query: str, contexts: List[Dict], conversation_history: List[Dict]) -> str:
         semester = "semester 6" if any("Semester_6" in ctx["metadata"]["semester"] 
                                  for ctx in contexts) else ""
@@ -65,8 +70,7 @@ class RAGHandler:
         prompt = self._create_prompt(query, context, conversation_history)
         
         # generate response using llm
-        # currently using OpenAI's GPT 4o-mini turbo (future development: locally ran small scale open source llm**)
-        response = self.client.chat.completions.create(
+        response = completion(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You Jonathan, are a helpful Computational Social Science (CSSci) course assistant that helps students understand course materials."},

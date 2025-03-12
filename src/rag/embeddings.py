@@ -7,20 +7,44 @@ from sentence_transformers import SentenceTransformer
 import chromadb
 from chromadb.config import Settings
 from typing import List, Dict
+import litellm
+from litellm import completion
 from src.data.preprocessor import DocumentChunk
+from dotenv import load_dotenv
+
+load_dotenv()
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+# Configure LiteLLM
+litellm.api_base = os.getenv("LITELLM_ENDPOINT")
+os.environ["LITELLM_API_KEY"] = os.getenv("LITELLM_API_KEY")
 
-class SentenceTransformerEmbedding:
-    def __init__(self, model_name: str):
-        self.model = SentenceTransformer(model_name)
+# class SentenceTransformerEmbedding:
+#     def __init__(self, model_name: str):
+#         self.model = SentenceTransformer(model_name)
+    
+#     def __call__(self, input: List[str]) -> List[List[float]]:
+#         embeddings = self.model.encode(input)
+#         return embeddings.tolist()
+
+class OpenAIEmbedding:
+    def __init__(self, model_name: str = "text-embedding-3-small"):
+        self.model = model_name
     
     def __call__(self, input: List[str]) -> List[List[float]]:
-        embeddings = self.model.encode(input)
-        return embeddings.tolist()
+        if not input:
+            return []
+        
+        # OpenAI expects a single string or list of strings
+        response = litellm.embedding(
+            model=self.model,
+            input=input
+        )
+        # Extract embeddings from response
+        return [data.embedding for data in response.data]
 
 class EmbeddingsManager:
-    def __init__(self, model_name: str ="all-MiniLM-L6-v2"):
+    def __init__(self, model_name: str ="text-embedding-3-small"):
         print(f"\n[DEBUG] Initializing EmbeddingsManager with model: {model_name}")
         root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         persist_directory = os.path.join(root_dir, "data", "chroma_db")
@@ -31,7 +55,7 @@ class EmbeddingsManager:
             os.makedirs(persist_directory)
         
         print("[DEBUG] Initializing embedding function")
-        embedding_function = SentenceTransformerEmbedding(model_name)
+        embedding_function = OpenAIEmbedding(model_name)
         
         print("[DEBUG] Creating ChromaDB client")
         self.chroma_client = chromadb.PersistentClient(
