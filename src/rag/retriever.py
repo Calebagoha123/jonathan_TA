@@ -1,28 +1,22 @@
 import os
 import sys
+import re
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from typing import List, Dict
-import litellm
-from litellm import completion
+from openai import OpenAI
 from src.rag.embeddings import EmbeddingsManager
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure LiteLLM
-litellm.api_base = os.getenv("LITELLM_ENDPOINT")
-os.environ["LITELLM_API_KEY"] = os.getenv("LITELLM_API_KEY")
-
-
 class RAGHandler:
     def __init__(self):
         self.embeddings_manager = EmbeddingsManager()
-            
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    
     def _create_prompt(self, query: str, contexts: List[Dict], conversation_history: List[Dict]) -> str:
-        semester = "semester 6" if any("Semester_6" in ctx["metadata"]["semester"] 
-                                 for ctx in contexts) else ""
         """Create a prompt to ask the the llm using the context retrieved"""
         
         # Format conversation history
@@ -30,8 +24,16 @@ class RAGHandler:
             f"{'Student' if msg['role'] == 'user' else 'Assistant'}: {msg['content']}"
             for msg in conversation_history[:-1]  # Exclude current query
         ])
+        
+        # Get the current semester from the query's context
+        current_semester = ""
+        for ctx in contexts:
+            if "metadata" in ctx and "semester" in ctx["metadata"]:
+                current_semester = ctx["metadata"]["semester"]
+                break
+        
         context_texts = [ctx["text"] for ctx in contexts]
-        prompt = f"""As Jonathan, the CSSci course assistant, use the following {semester} course material to answer the student's question. For capstone semester questions, consider the interconnected 
+        prompt = f"""As Jonathan, the CSSci course assistant, use the following {current_semester} course material to answer the student's question. For capstone semester questions, consider the interconnected 
         nature of all deliverables. If the answer cannot be found in the context, say so clearly.
     
         Previous conversation:
@@ -61,8 +63,23 @@ class RAGHandler:
             print(f"Created document with file_path: {metadata.get('file_path')}")
         return documents
     
+    def reset_collection(self):
+        """Reset the embeddings collection."""
+        self.embeddings_manager.reset_collection()
+    
     def generate_response(self, query: str, conversation_history: List[Dict]) -> str:
         """Generate the llm's response using RAG"""
+        # Check if we need to reset the collection based on the query
+        if "semester" in query.lower() and conversation_history:
+            # If switching semesters, reset the collection
+            last_query = conversation_history[-1]["content"]
+            if "semester" in last_query.lower():
+                last_semester = re.search(r"semester (\d+)", last_query.lower())
+                current_semester = re.search(r"semester (\d+)", query.lower())
+                if last_semester and current_semester and last_semester.group(1) != current_semester.group(1):
+                    print("[DEBUG] Detected semester switch, resetting collection")
+                    self.reset_collection()
+        
         # get the relevant context
         context = self._get_relevant_context(query)
         
@@ -70,19 +87,19 @@ class RAGHandler:
         prompt = self._create_prompt(query, context, conversation_history)
         
         # generate response using llm
-        response = completion(
+        response = self.client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You Jonathan, are a helpful Computational Social Science (CSSci) course assistant that helps students understand course materials."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7, # might have to fine tune this based on testing
-            max_tokens = 500, # this as well (short answers atm)
+            temperature=0.7,
+            max_tokens = 500,
             stream=True
         )
         
         for chunk in response:
-            delta = chunk.choices[0].delta  # access the delta attribute directly
+            delta = chunk.choices[0].delta
             content = getattr(delta, "content", "")
             yield content
     

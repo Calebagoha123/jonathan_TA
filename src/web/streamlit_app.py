@@ -58,12 +58,25 @@ def get_pdf_link(file_path: str) -> str:
 def display_source_documents(message, idx):
     if "source_docs" in message:
         st.divider()
-        st.markdown("**Relevant Document:**")
         for doc in message["source_docs"]:
             if doc and doc.get("file_path"):
-                pdf_link = get_pdf_link(doc["file_path"])
-                if pdf_link:
-                    st.markdown(pdf_link, unsafe_allow_html=True)
+                file_path = doc.get("file_path")
+                if file_path and file_path.endswith('.pdf'):
+                    # Create an expander for the PDF viewer
+                    with st.expander("📄 View Relevant Document", expanded=False):
+                        # Show PDF preview
+                        pdf_data = get_pdf_data(file_path)
+                        if pdf_data:
+                            st.markdown(
+                                f'<iframe src="{pdf_data}" width="100%" height="600px" style="border: none;"></iframe>',
+                                unsafe_allow_html=True
+                            )
+                            # Add download button below the PDF
+                            filename = os.path.basename(file_path)
+                            st.markdown(
+                                f'<a href="{pdf_data}" download="{filename}" style="text-decoration:none;color:#2E8BC0;padding:0.5em 1em;border:1px solid #2E8BC0;border-radius:5px;background-color:white;display:inline-block;margin-top:10px;">📥 Download PDF</a>',
+                                unsafe_allow_html=True
+                            )
 
 def handle_user_input(rag_handler):
     if prompt := st.chat_input("Ask your question here..."):
@@ -90,9 +103,21 @@ def handle_user_input(rag_handler):
                 if most_relevant_doc.get("file_path"):
                     response.divider()
                     response.markdown("**Relevant Document:**")
-                    pdf_link = get_pdf_link(most_relevant_doc["file_path"])
-                    if pdf_link:
-                        response.markdown(pdf_link, unsafe_allow_html=True)
+                    # Create an expander for the PDF viewer
+                    with response.expander("📄 View Relevant Document", expanded=False):
+                        # Show PDF preview
+                        pdf_data = get_pdf_data(most_relevant_doc["file_path"])
+                        if pdf_data:
+                            st.markdown(
+                                f'<iframe src="{pdf_data}" width="100%" height="600px" style="border: none;"></iframe>',
+                                unsafe_allow_html=True
+                            )
+                            # Add download button below the PDF
+                            filename = os.path.basename(most_relevant_doc["file_path"])
+                            st.markdown(
+                                f'<a href="{pdf_data}" download="{filename}" style="text-decoration:none;color:#2E8BC0;padding:0.5em 1em;border:1px solid #2E8BC0;border-radius:5px;background-color:white;display:inline-block;margin-top:10px;">📥 Download PDF</a>',
+                                unsafe_allow_html=True
+                            )
             
             st.session_state.messages.append({
                 "role": "assistant", 
@@ -108,7 +133,7 @@ def main():
     st.set_page_config(
         page_title="Jonathan CSSci Assistant",
         page_icon="📚",
-        layout="centered"
+        layout="centered"  # Back to centered layout
     )
 
     st.title("📚 Ask Jonathan")
@@ -123,11 +148,11 @@ def main():
     for idx, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.write(message["content"])
-            display_source_documents(message, idx)
+            if "source_docs" in message:
+                display_source_documents(message, idx)
 
     # Chat input
     handle_user_input(rag_handler)
-
 
     # Add sidebar with information
     with st.sidebar:
@@ -144,9 +169,6 @@ def main():
         if st.button("New Chat"):
             st.session_state.messages = []
             st.rerun()  # Force streamlit to rerun the app
-
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
 
 if __name__ == "__main__":
     main()
