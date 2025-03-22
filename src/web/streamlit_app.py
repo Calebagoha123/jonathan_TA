@@ -158,11 +158,11 @@ def main():
     with st.sidebar:
         st.title("Example Prompts")
         st.markdown("""
-        - What assignments are there for semester 6?
+        - Today is [date] what assignments do I have for the rest of semester 6? What is the timeline?
         - What are the weekly goals for the semester 4 group project?
         - How many credits can I get from an internship?
         - What masters programs can I apply to?
-        - What percentage of my semester 4 cme grade is the ethics position statement?
+        - What is semester 2's course code?
         """)
         
         # Add New Chat button
