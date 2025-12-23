@@ -12,11 +12,11 @@ An open-source RAG-powered chatbot that helps students find information from cou
 
 ## Features
 
-- 🤖 Natural conversation interface for course-related queries
-- 📚 Processes and indexes course materials (PDFs)
-- 🎯 Accurate responses based on official course documentation
-- 🔍 Smart filtering for semester and assignment-specific questions
-- 🔄 New chat functionality for fresh conversations
+- Natural conversation interface for course-related queries
+- Processes and indexes course materials (PDFs)
+- Accurate responses based on official course documentation
+- Smart filtering for semester and assignment-specific questions
+- New chat functionality for fresh conversations
 
 ## Technical Architecture
 #### 1. Document Processing (`src/data/`)
